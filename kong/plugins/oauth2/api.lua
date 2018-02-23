@@ -1,4 +1,5 @@
 local crud = require "kong.api.crud_helpers"
+local utils = require "kong.tools.utils"
 
 return {
   ["/oauth2_tokens/"] = {
@@ -80,7 +81,7 @@ return {
       local credentials, err = crud.find_by_id_or_field(
         dao_factory.oauth2_credentials,
         { consumer_id = self.params.consumer_id },
-        self.params.clientid_or_id,
+        utils.urldecode(self.params.clientid_or_id),
         "client_id"
       )
 

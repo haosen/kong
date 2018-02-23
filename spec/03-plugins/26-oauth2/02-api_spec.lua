@@ -241,14 +241,16 @@ describe("Plugin: oauth (API)", function()
   end)
 
   describe("/consumers/:consumer/oauth2/:id", function()
-    local credential
+    local credential, url_client_id
     before_each(function()
       helpers.dao:truncate_table("oauth2_credentials")
       credential = assert(helpers.dao.oauth2_credentials:insert {
         name         = "test app",
         redirect_uri = helpers.mock_upstream_ssl_url,
         consumer_id  = consumer.id,
+        client_id    = "foo bar",
       })
+      url_client_id = "foo%20bar"
     end)
     describe("GET", function()
       it("retrieves oauth2 credential by id", function()
@@ -263,7 +265,7 @@ describe("Plugin: oauth (API)", function()
       it("retrieves oauth2 credential by client id", function()
         local res = assert(admin_client:send {
           method = "GET",
-          path = "/consumers/bob/oauth2/" .. credential.client_id
+          path = "/consumers/bob/oauth2/" .. url_client_id
         })
         local body = assert.res_status(200, res)
         local json = cjson.decode(body)
@@ -289,13 +291,13 @@ describe("Plugin: oauth (API)", function()
       it("retrieves credential by clientid only if the credential belongs to the specified consumer", function()
         local res = assert(admin_client:send {
           method = "GET",
-          path = "/consumers/bob/oauth2/" .. credential.client_id
+          path = "/consumers/bob/oauth2/" .. url_client_id
         })
         assert.res_status(200, res)
 
         res = assert(admin_client:send {
           method = "GET",
-          path = "/consumers/alice/oauth2/" .. credential.client_id
+          path = "/consumers/alice/oauth2/" .. url_client_id
         })
         assert.res_status(404, res)
       end)
@@ -324,7 +326,7 @@ describe("Plugin: oauth (API)", function()
 
         local res = assert(admin_client:send {
           method = "PATCH",
-          path = "/consumers/bob/oauth2/" .. credential.client_id,
+          path = "/consumers/bob/oauth2/" .. url_client_id,
           body = {
             name = "4321UDP"
           },

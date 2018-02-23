@@ -4,6 +4,11 @@
 local resty_sha256 = require "resty.sha256"
 local pl_string = require "pl.stringx"
 local openssl_hmac = require "openssl.hmac"
+local utils = require "kong.tools.utils"
+
+
+local urldecode = utils.urldecode
+
 
 local ALGORITHM = "AWS4-HMAC-SHA256"
 
@@ -30,12 +35,6 @@ end
 
 local function percent_encode(char)
   return string.format("%%%02X", string.byte(char))
-end
-
-local function urldecode(str)
-  return (str:gsub("%%(%x%x)", function(c)
-    return string.char(tonumber(c, 16))
-  end))
 end
 
 local function canonicalise_path(path)

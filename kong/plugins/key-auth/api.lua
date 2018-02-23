@@ -1,4 +1,5 @@
 local crud = require "kong.api.crud_helpers"
+local utils = require "kong.tools.utils"
 
 return {
   ["/consumers/:username_or_id/key-auth/"] = {
@@ -27,7 +28,7 @@ return {
       local credentials, err = crud.find_by_id_or_field(
         dao_factory.keyauth_credentials,
         { consumer_id = self.params.consumer_id },
-        self.params.credential_key_or_id,
+        utils.urldecode(self.params.credential_key_or_id),
         "key"
       )
 
@@ -63,7 +64,7 @@ return {
       local credentials, err = crud.find_by_id_or_field(
         dao_factory.keyauth_credentials,
         {},
-        self.params.credential_key_or_id,
+        utils.urldecode(self.params.credential_key_or_id),
         "key"
       )
 

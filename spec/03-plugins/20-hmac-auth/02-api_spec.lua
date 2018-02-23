@@ -3,6 +3,8 @@ local cjson = require "cjson"
 local utils = require "kong.tools.utils"
 
 describe("Plugin: hmac-auth (API)", function()
+  local plugin_username = "spongebob squarepants"
+  local url_username = "spongebob%20squarepants"
   local client, credential, consumer
   setup(function()
     helpers.run_migrations()
@@ -32,7 +34,7 @@ describe("Plugin: hmac-auth (API)", function()
           method = "POST",
           path = "/consumers/bob/hmac-auth/",
           body = {
-            username = "bob",
+            username = plugin_username,
             secret = "1234"
           },
           headers = {["Content-Type"] = "application/json"}
@@ -47,7 +49,7 @@ describe("Plugin: hmac-auth (API)", function()
           method = "POST",
           path = "/consumers/bob/hmac-auth/",
           body = {
-            username = "bob",
+            username = plugin_username,
           },
           headers = {["Content-Type"] = "application/json"}
         })
@@ -74,7 +76,7 @@ describe("Plugin: hmac-auth (API)", function()
           method = "PUT",
           path = "/consumers/bob/hmac-auth/",
           body = {
-            username = "bob",
+            username = plugin_username,
             secret = "1234"
           },
           headers = {["Content-Type"] = "application/json"}
@@ -126,7 +128,7 @@ describe("Plugin: hmac-auth (API)", function()
       it("should retrieve by username", function()
         local res = assert(client:send {
           method = "GET",
-          path = "/consumers/bob/hmac-auth/" .. credential.username,
+          path = "/consumers/bob/hmac-auth/" .. url_username,
           body = {},
           headers = {["Content-Type"] = "application/json"}
         })
@@ -141,23 +143,27 @@ describe("Plugin: hmac-auth (API)", function()
         local res = assert(client:send {
           method = "PATCH",
           path = "/consumers/bob/hmac-auth/" .. credential.id,
-          body = {username = "alice"},
-          headers = {["Content-Type"] = "application/json"}
+          body = { username = "alice wonderland" },
+          headers = { ["Content-Type"] = "application/json" }
         })
         local body_json = assert.res_status(200, res)
         credential = cjson.decode(body_json)
-        assert.equals("alice", credential.username)
+        assert.equals("alice wonderland", credential.username)
+        plugin_username = "alice wonderland"
+        url_username = "alice%20wonderland"
       end)
       it("[SUCCESS] should update a credential by username", function()
         local res = assert(client:send {
           method = "PATCH",
-          path = "/consumers/bob/hmac-auth/" .. credential.username,
-          body = {username = "aliceUPD"},
+          path = "/consumers/bob/hmac-auth/" .. plugin_username,
+          body = {username = "alice updated"},
           headers = {["Content-Type"] = "application/json"}
         })
         local body_json = assert.res_status(200, res)
         credential = cjson.decode(body_json)
-        assert.equals("aliceUPD", credential.username)
+        assert.equals("alice updated", credential.username)
+        plugin_username = "alice updated"
+        url_username = "alice%20updated"
       end)
       it("[FAILURE] should return proper errors", function()
         local res = assert(client:send {
@@ -207,7 +213,7 @@ describe("Plugin: hmac-auth (API)", function()
         helpers.dao:truncate_table("hmacauth_credentials")
         assert(helpers.dao.hmacauth_credentials:insert {
           consumer_id = consumer.id,
-          username = "bob"
+          username = plugin_username
         })
         consumer2 = assert(helpers.dao.consumers:insert {
           username = "bob-the-buidler"
@@ -301,7 +307,7 @@ describe("Plugin: hmac-auth (API)", function()
         helpers.dao:truncate_table("hmacauth_credentials")
         credential = assert(helpers.dao.hmacauth_credentials:insert {
           consumer_id = consumer.id,
-          username = "bob"
+          username = plugin_username,
         })
       end)
       it("retrieve consumer from a hmac-auth id", function()
@@ -316,7 +322,7 @@ describe("Plugin: hmac-auth (API)", function()
       it("retrieve consumer from a hmac-auth username", function()
         local res = assert(client:send {
           method = "GET",
-          path = "/hmac-auths/" .. credential.username .. "/consumer"
+          path = "/hmac-auths/" .. url_username .. "/consumer"
         })
         local body = assert.res_status(200, res)
         local json = cjson.decode(body)

@@ -734,4 +734,15 @@ _M.validate_header_name = function(name)
               "', allowed characters are A-Z, a-z, 0-9, '_', and '-'"
 end
 
+
+--- url-decodes a string.
+-- @param str (string) The input string, e.g. "Some%20Key".
+-- @return the output string, "Some Key".
+_M.urldecode = function(str)
+  return (str:gsub("%%(%x%x)", function(c)
+    return string.char(tonumber(c, 16))
+  end))
+end
+
+
 return _M

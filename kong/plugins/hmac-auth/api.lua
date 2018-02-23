@@ -1,4 +1,5 @@
 local crud = require "kong.api.crud_helpers"
+local utils = require "kong.tools.utils"
 
 return{
   ["/consumers/:username_or_id/hmac-auth/"] = {
@@ -28,7 +29,7 @@ return{
       local credentials, err = crud.find_by_id_or_field(
         dao_factory.hmacauth_credentials,
         { consumer_id = self.params.consumer_id },
-        self.params.hmac_username_or_id,
+        utils.urldecode(self.params.hmac_username_or_id),
         "username"
       )
 
@@ -64,7 +65,7 @@ return{
       local credentials, err = crud.find_by_id_or_field(
         dao_factory.hmacauth_credentials,
         {},
-        self.params.hmac_username_or_id,
+        utils.urldecode(self.params.hmac_username_or_id),
         "username"
       )
 
